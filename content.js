@@ -6,28 +6,28 @@
 const url = window.location.href;
 var myStorage = window.localStorage;
 var delStorage = window.localStorage;
+console.log(JSON.parse(delStorage.getItem(url)));
 
-if(myStorage.getItem(url) === null || myStorage.getItem(url) == []){
-    myStorage.setItem(url, returnPlaylist(url));
+if(myStorage.getItem(url) === null || myStorage.getItem(url) == ""){
+    myStorage.setItem(url, JSON.stringify(returnPlaylist(url)));
 } else {
     var current = returnPlaylist(url);
-    var check = myStorage.getItem(url);
-    console.log(check);
-    console.log(current);
-    delVid = [];
+    var check = JSON.parse(myStorage.getItem(url));
+    var delVid = [];
     if(!matching(current, check)){
-        console.log(check.length);
         for(var i = 0; i < check.length; i++){
             if(!(current.includes(check[i]))){
-                if(delStorage.getItem(url) === null || delStorage.getItem(url) == []){
+                alert(check[i]);
+                if(delStorage.getItem(url) === null || delStorage.getItem(url) == ""){
                     delVid.push(check[i]);
                 } else {
-                    delVid = delStorage.getItem(url);
+                    delVid = JSON.parse(delStorage.getItem(url));
+                    delVid.push(check[i]);
                 }
-                delStorage.setItem(url, delVid);
+                delStorage.setItem(url, JSON.stringify(delVid));
             }
         }
-        myStorage.setItem(url,current);
+        myStorage.setItem(url, JSON.stringify(current));
     }
 }
 
@@ -58,6 +58,6 @@ var reset = document.getElementById('reset');
 if(reset){
     reset.addEventListener('click',  function(){
         alert("works");
-        delStorage.setItem(url, []);
+        delStorage.setItem(url, "");
     });
 }
