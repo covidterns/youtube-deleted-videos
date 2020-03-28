@@ -5,29 +5,32 @@
 
 const url = window.location.href;
 var myStorage = window.localStorage;
-var delStorage = window.localStorage;
-console.log(JSON.parse(delStorage.getItem(url)));
+var checkString = JSON.stringify([url, "current"]);
+var delString = JSON.stringify([url, "delete"]);
+console.log(myStorage.getItem(checkString));
+console.log(myStorage.getItem(delString));
 
-if(myStorage.getItem(url) === null || myStorage.getItem(url) == ""){
-    myStorage.setItem(url, JSON.stringify(returnPlaylist(url)));
+if(myStorage.getItem(checkString) === null || myStorage.getItem(checkString) == ""){
+    myStorage.setItem(checkString, JSON.stringify(returnPlaylist(url)));
 } else {
     var current = returnPlaylist(url);
-    var check = JSON.parse(myStorage.getItem(url));
+    var check = JSON.parse(myStorage.getItem(checkString));
     var delVid = [];
     if(!matching(current, check)){
         for(var i = 0; i < check.length; i++){
             if(!(current.includes(check[i]))){
-                alert(check[i]);
-                if(delStorage.getItem(url) === null || delStorage.getItem(url) == ""){
+                if(myStorage.getItem(delString) === null || myStorage.getItem(delString) == ""){
                     delVid.push(check[i]);
                 } else {
-                    delVid = JSON.parse(delStorage.getItem(url));
+                    delVid = JSON.parse(myStorage.getItem(delString));
                     delVid.push(check[i]);
                 }
-                delStorage.setItem(url, JSON.stringify(delVid));
+                myStorage.setItem(delString, JSON.stringify(delVid));
+            } else {
+                current.splice(current.indexOf(check[i]), 1);
             }
         }
-        myStorage.setItem(url, JSON.stringify(current));
+        myStorage.setItem(checkString, JSON.stringify(current));
     }
 }
 
@@ -57,7 +60,8 @@ function matching(arr1, arr2){
 var reset = document.getElementById('reset');
 if(reset){
     reset.addEventListener('click',  function(){
-        alert("works");
-        delStorage.setItem(url, "");
+        alert(window.location.href);
+        alert(JSON.parse(delString));
+        //myStorage.setItem(delString, "");
     });
 }
