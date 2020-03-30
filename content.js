@@ -3,18 +3,18 @@
  * @author: Jimmy Kwan
  */
 
-const url = window.location.href;
+var url = window.location.href;
 var myStorage = window.localStorage;
 var checkString = JSON.stringify([url, "current"]);
 var delString = JSON.stringify([url, "delete"]);
 console.log(myStorage.getItem(checkString));
-console.log(myStorage.getItem(delString));
 
 if(myStorage.getItem(checkString) === null || myStorage.getItem(checkString) == ""){
     myStorage.setItem(checkString, JSON.stringify(returnPlaylist(url)));
 } else {
     var current = returnPlaylist(url);
     var check = JSON.parse(myStorage.getItem(checkString));
+    var temp = current;
     var delVid = [];
     if(!matching(current, check)){
         for(var i = 0; i < check.length; i++){
@@ -26,11 +26,9 @@ if(myStorage.getItem(checkString) === null || myStorage.getItem(checkString) == 
                     delVid.push(check[i]);
                 }
                 myStorage.setItem(delString, JSON.stringify(delVid));
-            } else {
-                current.splice(current.indexOf(check[i]), 1);
             }
         }
-        myStorage.setItem(checkString, JSON.stringify(current));
+        myStorage.setItem(checkString, JSON.stringify(temp));
     }
 }
 
@@ -56,12 +54,13 @@ function matching(arr1, arr2){
     return true;
 }
 
+//gives chrome the information to display
+chrome.runtime.sendMessage({
+    url: window.location.href,
+    myStorage: JSON.parse(myStorage.getItem(delString))
+});
+
 // Clears missing videos from local storage for current URL, Clears from HTML
-var reset = document.getElementById('reset');
-if(reset){
-    reset.addEventListener('click',  function(){
-        alert(window.location.href);
-        alert(JSON.parse(delString));
-        //myStorage.setItem(delString, "");
-    });
-}
+chrome.runtime.onMessage.addListener(function(request){
+    myStorage.removeItem(delString);
+});

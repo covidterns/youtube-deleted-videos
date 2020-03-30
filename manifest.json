@@ -11,5 +11,9 @@
   "browser_action": {
     "default_popup": "popup.html",
     "default_title": "Missing videos for this page."
-  }
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": ["tabs"]
 }
