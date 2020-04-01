@@ -1,6 +1,7 @@
 {
   "name": "deletedvideos",
   "version": "1.0",
+  "description": "Youtube Playlist Watcher Extension for deleted vidoes",
   "manifest_version": 2,
   "content_scripts": [
     {
@@ -8,7 +9,7 @@
       "js": ["content.js"]
     }
   ],
-  "browser_action": {
+  "page_action": {
     "default_popup": "popup.html",
     "default_title": "Missing videos for this page."
   },
