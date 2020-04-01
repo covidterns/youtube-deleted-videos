@@ -3,64 +3,69 @@
  * @author: Jimmy Kwan
  */
 
-var url = window.location.href;
-var myStorage = window.localStorage;
-var checkString = JSON.stringify([url, "current"]);
-var delString = JSON.stringify([url, "delete"]);
-console.log(myStorage.getItem(checkString));
+const url = window.location.href;
+const playListId = url.substring(url.indexOf('=')+1)
+const myStorage = window.localStorage;
+const playlist = myStorage.getItem(playListId)
 
-if(myStorage.getItem(checkString) === null || myStorage.getItem(checkString) == ""){
-    myStorage.setItem(checkString, JSON.stringify(returnPlaylist(url)));
-} else {
-    var current = returnPlaylist(url);
-    var check = JSON.parse(myStorage.getItem(checkString));
-    var temp = current;
-    var delVid = [];
-    if(!matching(current, check)){
-        for(var i = 0; i < check.length; i++){
-            if(!(current.includes(check[i]))){
-                if(myStorage.getItem(delString) === null || myStorage.getItem(delString) == ""){
-                    delVid.push(check[i]);
-                } else {
-                    delVid = JSON.parse(myStorage.getItem(delString));
-                    delVid.push(check[i]);
-                }
-                myStorage.setItem(delString, JSON.stringify(delVid));
-            }
-        }
-        myStorage.setItem(checkString, JSON.stringify(temp));
+//Check if list is stored 
+if(playlist == null){
+
+     //Prompt user to watch playlist 
+    if(confirm("This playlist is not being watched would you like to watch this playlist?")){
+        myStorage.setItem(playListId, JSON.stringify(createPlaylist()))
+    }else{
+        myStorage.setItem(playListId, "Don't Watch");
     }
+}else if(playList !== "Don't Watch"){
+    //Check for updates 
+    const prevList = JSON.parse(playList)
+    checkForUpdates(prevList);
 }
 
-// Grabs every title and store it into an array. Returns an array.
-function returnPlaylist(currentURL){
-    var vidArray = [];
-    var videos = document.querySelectorAll("#video-title");
-    for (var i = 0; i < videos.length; i++){
-        if(videos[i].innerHTML.trim() != "[Private video]" &&
-        videos[i].innerHTML.trim() != "[Deleted video]"){
-            vidArray.push(videos[i].innerHTML.trim());
-        }
+
+/**
+ * Checks stored list and current list for updates, if there are changes it updates the list 
+ * @param {Object} prevList  
+ */
+function checkForUpdates(prevList){
+    const currentList = createPlaylist();
+    const curr = Object.keys(currentList);
+    const prev = Object.keys(prevList);
+
+    //Item has been added 
+    if(curr.length > prev.length){ 
+        const additions = curr.filter(video => !prev.includes(video))
+        additions.forEach(newItems =>   prevList[newItems] = currentList[newItems])
+        myStorage.setItem(_URL,prevList)
     }
-    return vidArray;
+    //Item has been deleted (Keep Track of Deletions as a Future Option)
+    else if(curr.length < prev.length){
+        const deletions = prev.filter(video => !curr.includes(video))
+        deletions.forEach(deletedItem => delete prevList[deletedItem])    
+        myStorage.setItem(_URL,prevList)
+    }   
 }
 
-// Checks two arrays if they match in order and content. Returns boolean.
-function matching(arr1, arr2){
-    if(arr1.length !== arr2.length) return false;
-    for(var i = 0; i < arr1.length; i++){
-        if(arr1[i] !== arr2[i]) return false;
-    }
-    return true;
+//Creates playlist object list with key-value pairs videoID : Title
+function createPlaylist(){
+    let playList = {}
+    const videos = document.querySelectorAll("a.ytd-playlist-video-renderer");
+    videos.forEach((title)=>{
+        const videoURL = title.href;
+        const videoID =  videoURL.substring(videoURL.indexOf('=')+1,videoURL.indexOf('&'))
+        playList[videoID] = title.querySelector("#video-title").innerHTML.trim()
+    })
+    return playList;
 }
 
 //gives chrome the information to display
 chrome.runtime.sendMessage({
     url: window.location.href,
-    myStorage: JSON.parse(myStorage.getItem(delString))
+    myStorage: JSON.parse(myStorage.getItem(playListId))
 });
 
 // Clears missing videos from local storage for current URL, Clears from HTML
 chrome.runtime.onMessage.addListener(function(request){
-    myStorage.removeItem(delString);
+    myStorage.removeItem(playListId);
 });
